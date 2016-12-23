@@ -12,8 +12,8 @@ watermark -s "For github only" id.png -o output.png
 
 before:
 
-![before image](./sample_before.png)
+![before image](./sample_before.jpg)
 
 after:
 
-![after image](./sample_after.png)
+![after image](./sample_after.jpg)
