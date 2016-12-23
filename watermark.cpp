@@ -11,8 +11,6 @@ using namespace cv;
 
 
 const double MAX_ROW_SIZE = 300.0;
-const vector<string> FLAGS = {"-o", "-s"};
-
 
 string replace_extension(string s, const string &extension)
 {
@@ -29,17 +27,15 @@ string replace_extension(string s, const string &extension)
 void print_usage()
 {
   cout << "Usage:" << endl;
-  cout << "    watermark image.png -s 'For someone Only' [-o 'output.png']" << endl;
+  cout << "    watermark -i image.png -s 'For someone Only' [-o 'output.png']" << endl;
 }
 
 
 class InputParser{
 public:
-  InputParser (int &argc, char **argv,
-      const vector<string> &arg_option_flags){
+  InputParser (int &argc, char **argv){
     for (int i=1; i < argc; ++i)
       this->tokens.push_back(std::string(argv[i]));
-    option_flags = arg_option_flags;
   }
   // @author iain
   const std::string& getCmdOption(const std::string &option) const{
@@ -56,53 +52,34 @@ public:
     return std::find(this->tokens.begin(), this->tokens.end(), option)
       != this->tokens.end();
   }
-  /*
-   * Returns the list of arguments that are not options.
-   * @author fyquah
-   */
-  vector<string> getArgs() const
-  {
-    vector<string> ret;
-    for (int i = 0 ; i < tokens.size() ; i++) {
-      if (std::find(option_flags.begin(), option_flags.end(),
-                    tokens[i]) != option_flags.end()) {
-        i++;
-      } else {
-        ret.push_back(tokens[i]);
-      }
-    }
-    return ret;
-  }
 private:
   std::vector<std::string> tokens;
-  std::vector<std::string> option_flags;
   std::string EMPTY_STRING = "";
 };
 
 int main(int argc, char* argv[])
 {
-  InputParser input(argc, argv, FLAGS);
+  InputParser input(argc, argv);
   string input_file_name;
   string output_file_name;
   string stamp;
-  vector<string> open_args = input.getArgs();
 
-  if (open_args.size() != 1 ||
-      !input.cmdOptionExists("-s")) {
+  if (!input.cmdOptionExists("-s") ||
+      !input.cmdOptionExists("-i")) {
     print_usage();
     return 1;
   }
-  input_file_name = open_args[0];
+  input_file_name = input.getCmdOption("-i");
   stamp = input.getCmdOption("-s");
 
   if (input.cmdOptionExists("-o")) {
     output_file_name = input.getCmdOption("-o");
   } else {
-    output_file_name = replace_extension(input_file_name, "jpeg");
+    output_file_name = replace_extension(input_file_name, "output.jpeg");
   }
 
   // 1. Load the image form the file.
-  Mat image = imread(argv[1], CV_LOAD_IMAGE_COLOR);
+  Mat image = imread(input_file_name, CV_LOAD_IMAGE_COLOR);
 
   // 2. Resize the image if it's too big.
   if (image.rows >= MAX_ROW_SIZE) {
